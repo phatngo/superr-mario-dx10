@@ -8,6 +8,7 @@ CMario::CMario(float x, float y, float vx):CGameObject(x, y)
 
 void CMario::Update(DWORD dt)
 {
+	
 	x += vx*dt;
 
 	int BackBufferWidth = CGame::GetInstance()->GetBackBufferWidth();

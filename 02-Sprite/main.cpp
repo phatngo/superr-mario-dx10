@@ -23,9 +23,11 @@
 
 #include "Animation.h"
 #include "Animations.h"
+#include "Map.h"
 
 
 #include "Mario.h"
+#include <fstream>
 
 
 #define WINDOW_CLASS_NAME L"SampleWindow"
@@ -39,6 +41,7 @@
 #define ID_TEX_MARIO 0
 #define ID_TEX_ENEMY 10
 #define ID_TEX_MISC 20
+#define ID_TEX_WORD 30
 
 #define TEXTURES_DIR L"textures"
 #define TEXTURE_PATH_MARIO TEXTURES_DIR "\\mario.png"
@@ -51,6 +54,7 @@ CMario *mario;
 #define MARIO_START_VX 0.1f
 
 CBrick *brick;
+CMap* current_map;
 
 LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -69,6 +73,30 @@ LRESULT CALLBACK WinProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	Load all game resources 
 	In this example: load textures, sprites, animations and mario object
 */
+void LoadMap(string line) {
+	int ID, rowMap, columnMap, columnTile, rowTile, totalTiles;
+	LPCWSTR path = ToLPCWSTR(line);
+	ifstream f;
+	f.open(path);
+	f >> ID >> rowMap >> columnMap >> rowTile >> columnTile >> totalTiles;
+	//Init Map Matrix
+	int** TileMapData = new int* [rowMap];
+	for (int i = 0; i < rowMap; i++)
+	{
+		TileMapData[i] = new int[columnMap];
+		int j;
+		for (j = 0; j < columnMap; j++) {
+			f >> TileMapData[i][j];
+			DebugOut(L"i,j: %d,%d,%d \n", i,j,TileMapData[i][j]);
+		}
+	}
+	f.close();
+
+	current_map = new CMap(ID, rowMap, columnMap, rowTile, columnTile, totalTiles);
+	current_map->ExtractTileFromTileSet();
+	current_map->SetTileMapData(TileMapData);
+	DebugOut(L"[INFO] _ParseSection_TILEMAP_DATA done:: \n");
+}
 void LoadResources()
 {
 	CTextures * textures = CTextures::GetInstance();
@@ -76,6 +104,7 @@ void LoadResources()
 	textures->Add(ID_TEX_MARIO, TEXTURE_PATH_MARIO);
 	//textures->Add(ID_ENEMY_TEXTURE, TEXTURE_PATH_ENEMIES, D3DCOLOR_XRGB(156, 219, 239));
 	textures->Add(ID_TEX_MISC, TEXTURE_PATH_MISC);
+	textures->Add(ID_TEX_WORD, L"textures\\world1-1_bank.png");
 
 
 	CSprites * sprites = CSprites::GetInstance();
@@ -122,7 +151,7 @@ void LoadResources()
 	ani->Add(20004);
 	animations->Add(510, ani);
 	
-	
+	LoadMap("tilemap/world1-1.txt");
 	mario = new CMario(MARIO_START_X, MARIO_START_Y, MARIO_START_VX);
 	brick = new CBrick(100.0f, 100.0f);
 }
@@ -144,6 +173,7 @@ void Render()
 	IDXGISwapChain* pSwapChain = g->GetSwapChain();
 	ID3D10RenderTargetView* pRenderTargetView = g->GetRenderTargetView();
 	ID3DX10Sprite* spriteHandler = g->GetSpriteHandler();
+	
 
 	if (pD3DDevice != NULL)
 	{
@@ -155,7 +185,7 @@ void Render()
 		// Use Alpha blending for transparent sprites
 		FLOAT NewBlendFactor[4] = { 0,0,0,0 };
 		pD3DDevice->OMSetBlendState(g->GetAlphaBlending(), NewBlendFactor, 0xffffffff);
-
+		current_map->Render();
 		brick->Render();
 		mario->Render();
 

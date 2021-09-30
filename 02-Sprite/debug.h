@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Windows.h>
+
 #include <windows.h>
 #include <signal.h>
 #include <string.h>
@@ -7,6 +9,9 @@
 #include <stdarg.h>
 #include <time.h>
 #include <stdlib.h>
+#include <string>
+
+using namespace std;
 
 #define _W(x)  __W(x)
 #define __W(x)  L##x
@@ -21,3 +26,5 @@
 void DebugOut(wchar_t *fmt, ...);
 void DebugOutTitle(wchar_t *fmt, ...);
 void SetDebugWindow(HWND hwnd);
+LPCWSTR ToLPCWSTR(string st);
+

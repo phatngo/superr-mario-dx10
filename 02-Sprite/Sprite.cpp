@@ -9,6 +9,7 @@ CSprite::CSprite(int id, int left, int top, int right, int bottom, LPTEXTURE tex
 	this->bottom = bottom;
 	this->texture = tex;
 
+	
 	// Set the sprite’s shader resource view
 	sprite.pTexture = tex->getShaderResourceView();
 
@@ -25,16 +26,12 @@ CSprite::CSprite(int id, int left, int top, int right, int bottom, LPTEXTURE tex
 	sprite.TextureIndex = 0;
 
 	D3DXMatrixScaling(&this->matScaling, (FLOAT)spriteWidth, (FLOAT)spriteHeight, 1.0f);
+	
 }
 
 void CSprite::Draw(float x, float y)
 {
 	CGame* g = CGame::GetInstance();
-
-	D3DXMATRIX matTranslation;
-	D3DXMatrixTranslation(&matTranslation, x, (g->GetBackBufferHeight() - y), 0.1f);
-	this->sprite.matWorld = (this->matScaling * matTranslation);
-
-	g->GetSpriteHandler()->DrawSpritesImmediate(&sprite, 1, 0, 0);
+	g->Draw(x, y, texture, left, top, right, bottom);
 }
 
